@@ -10,18 +10,16 @@ int butt[5];
 
 void setup() 
 {  
-    Serial.begin(9600); 
-
-    // here you can use cycle for to init all pins
-    pinMode(ledInit[1], OUTPUT);
-    pinMode(ledInit[2], OUTPUT);
-    pinMode(ledInit[3], OUTPUT);
-    pinMode(ledInit[0], OUTPUT);
-    pinMode(buttInit[1], INPUT);
-    pinMode(buttInit[2], INPUT);
-    pinMode(buttInit[3], INPUT);
-    pinMode(buttInit[0], INPUT);   
+     Serial.begin(9600); 
+     randomSeed(analogRead(0));
+     
+      for (int s = 0; s < 4; s++)
+      {
+         pinMode(ledInit[s], OUTPUT);
+         pinMode(buttInit[s], INPUT);
+      } 
 }
+
 
 class Timer
 {
@@ -32,11 +30,6 @@ class Timer
   unsigned long  limitValue;
   unsigned long old_i_timer;
 
-  void oldGameTimer() // IMHO it's better to call this func setTimer 
-  {
-    old_i_timer = millis();
-  }
-
   void updateTimer()
   {
      i_timer = millis();
@@ -44,6 +37,7 @@ class Timer
   
   void setTimer(unsigned long timeToSet)
   {
+    old_i_timer = millis();
     limitValue = timeToSet;
   }
   
@@ -65,8 +59,7 @@ class Timer
 Timer timer; 
 Timer ledTimer;
 
-// here you have a function with a same name as in line 50 - what is it for?
-bool isTimerRun()
+bool isLedTimerRun()
 {
   unsigned long  newTimeLed;
   newTimeLed = millis();
@@ -82,7 +75,7 @@ bool isTimerRun()
 }
 
 //ожидаем нажатие кнопки 
-void buttPress()
+int buttPress(int num)
 {
   noButtPress = 0;
   timer.i_oldLedTimer = millis();
@@ -95,23 +88,28 @@ void buttPress()
     break;
     } 
     
-   else if ( isTimerRun() == false )
+   else if ( isLedTimerRun() == false )
     {
        noButtPress = 1;
      break;
     }
   }
-  
+    return 0;
   }
 
-//включение рандомной дампочки
-int random_led()
+
+int randomgen()
 {
-   randomSeed(analogRead(0)); // this can be launched in the setup()
-   num = rand() % 3 + 1; 
-   digitalWrite(ledInit[num], HIGH);   
-   return num; // here you return the num but you do not use it
+  int num = rand() % 3 + 1; 
+   return num; 
 }
+
+//включение рандомной лампочки
+int random_led(int num)
+{
+   digitalWrite(ledInit[num], HIGH);   
+}
+
 
 
 //выключаю все кнопки 
@@ -125,9 +123,9 @@ void led_off()
   }  
 
 //выдаем результат в зависимости от нажатой кнопки 
-void buttWait()
+int buttWait(int num)
 {
-      buttPress();
+      buttPress(num);
       if (num == butt[num])
       {
         Serial.print("                                                                  CORRECT! \n");
@@ -137,6 +135,8 @@ void buttWait()
         {
           Serial.print("                                                          NO BUTTON PRESS DETECTED \n");
         }
+
+        return 0;
 }
 
 //очистка буфера
@@ -152,29 +152,22 @@ void buttWait()
 //ждем кнопку старт
 void buttsWait()
 {
-  while (butt[0] == 0) // here you use the global variable instead of the local variable throwing between the funcs
-{
-  checkButton();
-}
-}
-
-//проверяю или нажата кнопка старт
-void checkButton()
+  while (butt[0] == 0) 
 {
   if(digitalRead(buttInit[0]) == HIGH){ 
-   butt[0] = 1; // here you use the global variable instead of the local variable throwing between the funcs
-  }
+   butt[0] = 1; 
+}
+}
 }
 
 void loop() { 
-
+  int b = randomgen();
   switch (a) 
   {
   case 1: // the game start
         Serial.print("                                                        Please press Start Button!!!\n\n");
         buttsWait();
         timer.setTimer(15000); //сколько будет идти игра
-        timer.oldGameTimer();
         timer.updateTimer(); // включаем таймер
         a = 2;
         break;
@@ -185,9 +178,9 @@ void loop() {
         }
         timer.updateTimer(); // обновляем таймер
         timer.isTimerRun();
-        random_led();
+        random_led(b);
         ledTimer.setTimer(500); //ставим сколько дает времени на нажатие
-        timer.Led_timer(); //включаю таймер 
+        buttWait(b);
         clearbutt(); //очищаю значение кнопок  
         led_off(); //выключаем все лампочки
         Serial.print("                                                              your score is ");
