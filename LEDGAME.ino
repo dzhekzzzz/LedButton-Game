@@ -11,6 +11,8 @@ int butt[5];
 void setup() 
 {  
     Serial.begin(9600); 
+
+    // here you can use cycle for to init all pins
     pinMode(ledInit[1], OUTPUT);
     pinMode(ledInit[2], OUTPUT);
     pinMode(ledInit[3], OUTPUT);
@@ -30,7 +32,7 @@ class Timer
   unsigned long  limitValue;
   unsigned long old_i_timer;
 
-  void oldGameTimer()
+  void oldGameTimer() // IMHO it's better to call this func setTimer 
   {
     old_i_timer = millis();
   }
@@ -54,15 +56,16 @@ class Timer
   }
 
   //таймер лампочки 3сек
-  void Led_timer()
+  void Led_timer() 
   {
-     buttWait();
+     buttWait(); // it is not right to do so - LedTImer mus be a led timer - it do not have to deal with buttons. You better run buttonWait in the loop()
   }
 };
 
 Timer timer; 
 Timer ledTimer;
 
+// here you have a function with a same name as in line 50 - what is it for?
 bool isTimerRun()
 {
   unsigned long  newTimeLed;
@@ -104,16 +107,17 @@ void buttPress()
 //включение рандомной дампочки
 int random_led()
 {
-   randomSeed(analogRead(0));
+   randomSeed(analogRead(0)); // this can be launched in the setup()
    num = rand() % 3 + 1; 
    digitalWrite(ledInit[num], HIGH);   
-   return num;
+   return num; // here you return the num but you do not use it
 }
 
 
 //выключаю все кнопки 
 void led_off()
   {
+    // here you also can use a cycle
    digitalWrite(ledInit[1], LOW);
    digitalWrite(ledInit[2], LOW);
    digitalWrite(ledInit[3], LOW);
@@ -148,7 +152,7 @@ void buttWait()
 //ждем кнопку старт
 void buttsWait()
 {
-  while (butt[0] == 0)
+  while (butt[0] == 0) // here you use the global variable instead of the local variable throwing between the funcs
 {
   checkButton();
 }
@@ -157,8 +161,8 @@ void buttsWait()
 //проверяю или нажата кнопка старт
 void checkButton()
 {
-  if(digitalRead(buttInit[0]) == HIGH){
-   butt[0] = 1;
+  if(digitalRead(buttInit[0]) == HIGH){ 
+   butt[0] = 1; // here you use the global variable instead of the local variable throwing between the funcs
   }
 }
 
