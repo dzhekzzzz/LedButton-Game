@@ -3,7 +3,6 @@
 int a = 1;
 int score = 0;
 int noButtPress = 0;
-int num;
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
 int butt[5];
@@ -19,7 +18,6 @@ void setup()
          pinMode(buttInit[s], INPUT);
       } 
 }
-
 
 class Timer
 {
@@ -49,15 +47,11 @@ class Timer
       return false;
   }
 
-  //таймер лампочки 3сек
-  void Led_timer() 
-  {
-     buttWait(); // it is not right to do so - LedTImer mus be a led timer - it do not have to deal with buttons. You better run buttonWait in the loop()
-  }
 };
 
 Timer timer; 
 Timer ledTimer;
+
 
 bool isLedTimerRun()
 {
@@ -97,29 +91,26 @@ int buttPress(int num)
     return 0;
   }
 
-
 int randomgen()
 {
   int num = rand() % 3 + 1; 
    return num; 
 }
 
-//включение рандомной лампочки
+//включение рандомной дампочки
 int random_led(int num)
 {
    digitalWrite(ledInit[num], HIGH);   
 }
 
 
-
 //выключаю все кнопки 
 void led_off()
   {
-    // here you also can use a cycle
-   digitalWrite(ledInit[1], LOW);
-   digitalWrite(ledInit[2], LOW);
-   digitalWrite(ledInit[3], LOW);
-   digitalWrite(ledInit[0], LOW);
+      for (int l = 0; l < 4; l++)
+      {
+        digitalWrite(ledInit[l], LOW);
+      } 
   }  
 
 //выдаем результат в зависимости от нажатой кнопки 
