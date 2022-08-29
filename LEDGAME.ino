@@ -50,6 +50,7 @@ class Timer
   }
 
   //таймер лампочки 3сек
+  /* YOU still have not changed this , please change*/
   void Led_timer() 
   {
      buttWait(); // it is not right to do so - LedTImer mus be a led timer - it do not have to deal with buttons. You better run buttonWait in the loop()
@@ -75,6 +76,8 @@ bool isLedTimerRun()
 }
 
 //ожидаем нажатие кнопки 
+// you have mixed the button and ledstimer - separate them in the loop - you have done a correct usage of the main game's timer 
+// and you can do this with ledstimer too!
 int buttPress(int num)
 {
   noButtPress = 0;
@@ -115,7 +118,7 @@ int random_led(int num)
 //выключаю все кнопки 
 void led_off()
   {
-    // here you also can use a cycle
+    // here you also can use a cycle - you have not fixed this too!
    digitalWrite(ledInit[1], LOW);
    digitalWrite(ledInit[2], LOW);
    digitalWrite(ledInit[3], LOW);
@@ -150,6 +153,19 @@ int buttWait(int num)
     }
 
 //ждем кнопку старт
+  // it could be so:
+
+// void buttsWait(int butNumber)
+// {
+//   while (butt[butNumber] == LOW) 
+//   {
+//     if(digitalRead(buttInit[butNumber]) == HIGH)
+//       butt[butNumber] = 1; 
+//   }
+// }
+
+// use spaces and tabulations to set the {} brackets to separate their looking in the code - to know what ends in what place
+// do not use a familiar func names - like buttsWait and buttWait !!! it is easy to mishmash them !!!
 void buttsWait()
 {
   while (butt[0] == 0) 
@@ -172,12 +188,12 @@ void loop() {
         a = 2;
         break;
   case 2: // the game
-        if (!timer.isTimerRun()) 
+        if (!timer.isTimerRun()) // you jump to a=3 if the timer has run ??? is it correct?
         {
         a = 3;
         }
         timer.updateTimer(); // обновляем таймер
-        timer.isTimerRun();
+        timer.isTimerRun(); // you call this twice: in 193 and in 188 - is it needed ?
         random_led(b);
         ledTimer.setTimer(500); //ставим сколько дает времени на нажатие
         buttWait(b);
