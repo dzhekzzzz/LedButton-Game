@@ -3,7 +3,6 @@
 int a = 1;
 int score = 0;
 int noButtPress = 0;
-int num;
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
 int butt[5];
@@ -20,7 +19,6 @@ void setup()
       } 
 }
 
-
 class Timer
 {
   public:
@@ -35,30 +33,25 @@ class Timer
      i_timer = millis();
   }
   
-  void setTimer(unsigned long timeToSet)
-  {
-    old_i_timer = millis();
-    limitValue = timeToSet;
-  }
+    void setTimer(unsigned long timeToSet)
+    {
+      old_i_timer = millis();
+      limitValue = timeToSet;
+    }
   
-  bool isTimerRun()
-  {
-    if ( (i_timer - old_i_timer) <= limitValue)
-      return true;
-    else 
-      return false;
-  }
+      bool isTimerRun()
+      {
+        if ( (i_timer - old_i_timer) <= limitValue)
+          return true;
+        else 
+          return false;
+      }
 
-  //таймер лампочки 3сек
-  /* YOU still have not changed this , please change*/
-  void Led_timer() 
-  {
-     buttWait(); // it is not right to do so - LedTImer mus be a led timer - it do not have to deal with buttons. You better run buttonWait in the loop()
-  }
 };
 
 Timer timer; 
 Timer ledTimer;
+
 
 bool isLedTimerRun()
 {
@@ -68,61 +61,64 @@ bool isLedTimerRun()
   {
     return false;
   }
-  else
-  {
-    return true;
-  }
+    else
+    {
+      return true;
+    }
   
 }
 
-//ожидаем нажатие кнопки 
-// you have mixed the button and ledstimer - separate them in the loop - you have done a correct usage of the main game's timer 
-// and you can do this with ledstimer too!
 int buttPress(int num)
 {
   noButtPress = 0;
   timer.i_oldLedTimer = millis();
    
   while (butt[num] == 0)
-  {
+ {
 
-  if (digitalRead(buttInit[num]) == HIGH) {
-    butt[num] = num;
-    break;
-    } 
+   if (digitalRead(buttInit[num]) == HIGH) 
+     {
+      butt[num] = num;
+      break;
+     } 
     
-   else if ( isLedTimerRun() == false )
-    {
+      else if ( isLedTimerRun() == false )
+      {
        noButtPress = 1;
-     break;
-    }
-  }
+       break;
+      }
+ }
     return 0;
-  }
+}
 
-
-int randomgen()
+//generating random number for led
+int RandomGenLed()
 {
   int num = rand() % 3 + 1; 
    return num; 
 }
 
-//включение рандомной лампочки
+//generating random time for led
+int RandomGenTime()
+{
+  int randomtime = (rand() % 9 + 3) * 100; 
+  return randomtime;
+}
+
+ //turn on random led
 int random_led(int num)
 {
    digitalWrite(ledInit[num], HIGH);   
 }
 
 
-
-//выключаю все кнопки 
+//turn off all leds
 void led_off()
   {
-    // here you also can use a cycle - you have not fixed this too!
-   digitalWrite(ledInit[1], LOW);
-   digitalWrite(ledInit[2], LOW);
-   digitalWrite(ledInit[3], LOW);
-   digitalWrite(ledInit[0], LOW);
+      for (int l = 0; l < 4; l++)
+      {
+        digitalWrite(ledInit[l], LOW);
+      } 
   }  
 
 //выдаем результат в зависимости от нажатой кнопки 
@@ -142,7 +138,7 @@ int buttWait(int num)
         return 0;
 }
 
-//очистка буфера
+//clearing butt bufer
     void clearbutt()
     {
         butt[0] = 1; 
@@ -152,60 +148,51 @@ int buttWait(int num)
       }
     }
 
-//ждем кнопку старт
-  // it could be so:
-
-// void buttsWait(int butNumber)
-// {
-//   while (butt[butNumber] == LOW) 
-//   {
-//     if(digitalRead(buttInit[butNumber]) == HIGH)
-//       butt[butNumber] = 1; 
-//   }
-// }
-
-// use spaces and tabulations to set the {} brackets to separate their looking in the code - to know what ends in what place
-// do not use a familiar func names - like buttsWait and buttWait !!! it is easy to mishmash them !!!
-void buttsWait()
+ //waiting for start button
+void StartButtonWait()
 {
-  while (butt[0] == 0) 
-{
-  if(digitalRead(buttInit[0]) == HIGH){ 
-   butt[0] = 1; 
-}
-}
+   while (butt[0] == 0) 
+   {
+     if(digitalRead(buttInit[0]) == HIGH)
+     { 
+      butt[0] = 1; 
+     }
+   }
 }
 
-void loop() { 
-  int b = randomgen();
+void loop() 
+{ 
+  int b = RandomGenLed();
+  int t = RandomGenTime();
+  
   switch (a) 
   {
   case 1: // the game start
         Serial.print("                                                        Please press Start Button!!!\n\n");
-        buttsWait();
-        timer.setTimer(15000); //сколько будет идти игра
-        timer.updateTimer(); // включаем таймер
+        StartButtonWait(); //waiting for start button
+        timer.setTimer(15000); //set how long game will last 
+        timer.updateTimer(); // init timer
         a = 2;
         break;
+        
   case 2: // the game
-        if (!timer.isTimerRun()) // you jump to a=3 if the timer has run ??? is it correct?
+        if (timer.isTimerRun() == false) //checking is timer run
         {
         a = 3;
         }
-        timer.updateTimer(); // обновляем таймер
-        timer.isTimerRun(); // you call this twice: in 193 and in 188 - is it needed ?
-        random_led(b);
-        ledTimer.setTimer(500); //ставим сколько дает времени на нажатие
+        timer.updateTimer(); // updating timer valuerun
+        random_led(b); //turn on random led
+        ledTimer.setTimer(t); //setting time for leds
         buttWait(b);
-        clearbutt(); //очищаю значение кнопок  
-        led_off(); //выключаем все лампочки
+        clearbutt(); //clearing butt bufer
+        led_off(); //turn off all leds
         Serial.print("                                                              your score is ");
         Serial.print(score);
         Serial.print("\n \n");
         delay(500);
-
         break;     
-  case 3:
+        
+  case 3: //game over
        Serial.print("                                                                 GAME OVER\n");
        Serial.print("                                                          your final score is ");
        Serial.print(score);
