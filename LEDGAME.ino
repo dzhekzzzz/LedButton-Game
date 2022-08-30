@@ -39,7 +39,7 @@ class Timer
       limitValue = timeToSet;
     }
   
-      bool isTimerRun()
+      bool isTimerRunning()
       {
         if ( (i_timer - old_i_timer) <= limitValue)
           return true;
@@ -68,28 +68,6 @@ bool isLedTimerRun()
   
 }
 
-int buttPress(int num)
-{
-  noButtPress = 0;
-  timer.i_oldLedTimer = millis();
-   
-  while (butt[num] == 0)
- {
-
-   if (digitalRead(buttInit[num]) == HIGH) 
-     {
-      butt[num] = num;
-      break;
-     } 
-    
-      else if ( isLedTimerRun() == false )
-      {
-       noButtPress = 1;
-       break;
-      }
- }
-    return 0;
-}
 
 //generating random number for led
 int RandomGenLed()
@@ -124,13 +102,12 @@ void led_off()
 //выдаем результат в зависимости от нажатой кнопки 
 int buttWait(int num)
 {
-      buttPress(num);
       if (num == butt[num])
       {
         Serial.print("                                                                  CORRECT! \n");
         score += 1;
       }    
-        else if (noButtPress == 1)
+        else if (isLedTimerRun() == false)
         {
           Serial.print("                                                          NO BUTTON PRESS DETECTED \n");
         }
@@ -176,13 +153,22 @@ void loop()
         break;
         
   case 2: // the game
-        if (timer.isTimerRun() == false) //checking is timer run
+        if (timer.isTimerRunning() == false) //checking is timer run
         {
         a = 3;
         }
         timer.updateTimer(); // updating timer valuerun
         random_led(b); //turn on random led
         ledTimer.setTimer(t); //setting time for leds
+        timer.i_oldLedTimer = millis();
+        while ( isLedTimerRun() == true )
+        {
+          if (digitalRead(buttInit[b]) == HIGH) 
+           {
+            butt[b] = b;
+             break;
+           }
+        }
         buttWait(b);
         clearbutt(); //clearing butt bufer
         led_off(); //turn off all leds
