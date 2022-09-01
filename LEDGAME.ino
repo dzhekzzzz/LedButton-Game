@@ -26,7 +26,8 @@ class Timer
   unsigned long  i_ledTimer;
   unsigned long  i_oldLedTimer;
   unsigned long  limitValue;
-  unsigned long old_i_timer;
+  unsigned long  old_i_timer;
+  unsigned long  newTimeLed;
 
   void updateTimer()
   {
@@ -41,6 +42,8 @@ class Timer
   
       bool isTimerRunning()
       {
+        i_timer = millis();
+        
         if ( (i_timer - old_i_timer) <= limitValue)
           return true;
         else 
@@ -51,47 +54,35 @@ class Timer
 
 Timer timer; 
 Timer ledTimer;
+Timer waitTimer;
 
 
-bool isLedTimerRun()
-{
-  unsigned long  newTimeLed;
-  newTimeLed = millis();
-  if ( (newTimeLed - timer.i_oldLedTimer) >= ledTimer.limitValue )
-  {
-    return false;
-  }
-    else
-    {
-      return true;
-    }
-  
-}
+
 
 
 //generating random number for led
-int RandomGenLed()
+int randomGenLed()
 {
   int num = rand() % 3 + 1; 
    return num; 
 }
 
 //generating random time for led
-int RandomGenTime()
+int randomGenTime()
 {
   int randomtime = (rand() % 9 + 3) * 100; 
   return randomtime;
 }
 
  //turn on random led
-int random_led(int num)
+int randomLed(int num)
 {
    digitalWrite(ledInit[num], HIGH);   
 }
 
 
 //turn off all leds
-void led_off()
+void ledOff()
   {
       for (int l = 0; l < 4; l++)
       {
@@ -107,7 +98,7 @@ int buttWait(int num)
         Serial.print("                                                                  CORRECT! \n");
         score += 1;
       }    
-        else if (isLedTimerRun() == false)
+        else if ( ledTimer.isTimerRunning() == false)
         {
           Serial.print("                                                          NO BUTTON PRESS DETECTED \n");
         }
@@ -116,7 +107,7 @@ int buttWait(int num)
 }
 
 //clearing butt bufer
-    void clearbutt()
+    void clearButt()
     {
         butt[0] = 1; 
       for (int i = 1; i < 5; i++)
@@ -126,7 +117,7 @@ int buttWait(int num)
     }
 
  //waiting for start button
-void StartButtonWait()
+void startButtonWait()
 {
    while (butt[0] == 0) 
    {
@@ -137,31 +128,32 @@ void StartButtonWait()
    }
 }
 
+
 void loop() 
 { 
-  int b = RandomGenLed();
-  int t = RandomGenTime();
-  
+  int b = randomGenLed();
+  int t = randomGenTime();
+  int timeleft = timer.limitValue - (timer.i_timer - timer.old_i_timer);
   switch (a) 
   {
   case 1: // the game start
         Serial.print("                                                        Please press Start Button!!!\n\n");
-        StartButtonWait(); //waiting for start button
+        startButtonWait(); //waiting for start button
         timer.setTimer(15000); //set how long game will last 
         timer.updateTimer(); // init timer
         a = 2;
         break;
         
   case 2: // the game
-        if (timer.isTimerRunning() == false) //checking is timer run
-        {
-        a = 3;
-        }
-        timer.updateTimer(); // updating timer valuerun
-        random_led(b); //turn on random led
+        timer.updateTimer(); // updating timer value
+        randomLed(b); //turn on random led
         ledTimer.setTimer(t); //setting time for leds
-        timer.i_oldLedTimer = millis();
-        while ( isLedTimerRun() == true )
+        if ( (timeleft) <= 999)
+         {
+          t = timeleft;    
+          a = 3;     
+         }
+        while ( ledTimer.isTimerRunning() == true )
         {
           if (digitalRead(buttInit[b]) == HIGH) 
            {
@@ -170,12 +162,20 @@ void loop()
            }
         }
         buttWait(b);
-        clearbutt(); //clearing butt bufer
-        led_off(); //turn off all leds
+        clearButt(); //clearing butt bufer
+        ledOff(); //turn off all leds
         Serial.print("                                                              your score is ");
         Serial.print(score);
         Serial.print("\n \n");
-        delay(500);
+        waitTimer.setTimer(t);
+           while ( waitTimer.isTimerRunning() == true )
+        {
+          if ( waitTimer.isTimerRunning() == false )
+          {
+            break;
+          }
+           
+        }
         break;     
         
   case 3: //game over
