@@ -1,11 +1,14 @@
 
 #include <stdio.h> 
-int a = 1;
+int gameState = 1;
 int score = 0;
 int noButtPress = 0;
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
 int butt[5];
+#define GAME_SET_N_START 1
+#define GAME_RUNNING 2
+#define GAME_END 3
 
 void setup() 
 {  
@@ -134,24 +137,24 @@ void loop()
   int b = randomGenLed();
   int t = randomGenTime();
   int timeleft = timer.limitValue - (timer.i_timer - timer.old_i_timer);
-  switch (a) 
+  switch (gameState) 
   {
-  case 1: // the game start
+  case GAME_SET_N_START: // the game start
         Serial.print("                                                        Please press Start Button!!!\n\n");
         startButtonWait(); //waiting for start button
         timer.setTimer(15000); //set how long game will last 
         timer.updateTimer(); // init timer
-        a = 2;
+        gameState = GAME_RUNNING;
         break;
         
-  case 2: // the game
+  case GAME_RUNNING: // the game
         timer.updateTimer(); // updating timer value
         randomLed(b); //turn on random led
         ledTimer.setTimer(t); //setting time for leds
         if ( (timeleft) <= 999)
          {
           t = timeleft;    
-          a = 3;     
+          gameState = GAME_END;     
          }
         while ( ledTimer.isTimerRunning() == true )
         {
@@ -178,12 +181,12 @@ void loop()
         }
         break;     
         
-  case 3: //game over
+  case GAME_END: //game over
        Serial.print("                                                                 GAME OVER\n");
        Serial.print("                                                          your final score is ");
        Serial.print(score);
        Serial.print(" !!! \n\n\n");
-       a = 1;
+       gameState = GAME_SET_N_START;
        score = 0;
        butt[0] = 0;
        break;
