@@ -6,9 +6,9 @@ int noButtPress = 0;
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
 int butt[5];
-#define GAME_SET_N_START 1
-#define GAME_RUNNING 2
-#define GAME_END 3
+#define GAME_SET_N_START (1)
+#define GAME_RUNNING (2)
+#define GAME_END (3)
 
 void setup() 
 {  
@@ -25,29 +25,26 @@ void setup()
 class Timer
 {
   public:
-  unsigned long  i_timer;
-  unsigned long  i_ledTimer;
-  unsigned long  i_oldLedTimer;
+  unsigned long  newTimeValue;
   unsigned long  limitValue;
-  unsigned long  old_i_timer;
-  unsigned long  newTimeLed;
+  unsigned long  oldTimeValue;
 
   void updateTimer()
   {
-     i_timer = millis();
+     newTimeValue = millis();
   }
   
     void setTimer(unsigned long timeToSet)
     {
-      old_i_timer = millis();
+      oldTimeValue = millis();
       limitValue = timeToSet;
     }
   
       bool isTimerRunning()
       {
-        i_timer = millis();
+        newTimeValue = millis();
         
-        if ( (i_timer - old_i_timer) <= limitValue)
+        if ( (newTimeValue - oldTimeValue) <= limitValue)
           return true;
         else 
           return false;
@@ -78,19 +75,16 @@ int randomGenTime()
 }
 
  //turn on random led
-int randomLed(int num)
+int randomLedOn(int num)
 {
    digitalWrite(ledInit[num], HIGH);   
 }
 
 
 //turn off all leds
-void ledOff()
+void ledOff(int num)
   {
-      for (int l = 0; l < 4; l++)
-      {
-        digitalWrite(ledInit[l], LOW);
-      } 
+        digitalWrite(ledInit[num], LOW);
   }  
 
 //выдаем результат в зависимости от нажатой кнопки 
@@ -136,7 +130,7 @@ void loop()
 { 
   int b = randomGenLed();
   int t = randomGenTime();
-  int timeleft = timer.limitValue - (timer.i_timer - timer.old_i_timer);
+  int timeleft = timer.limitValue - (timer.newTimeValue - timer.oldTimeValue);
   switch (gameState) 
   {
   case GAME_SET_N_START: // the game start
@@ -149,7 +143,7 @@ void loop()
         
   case GAME_RUNNING: // the game
         timer.updateTimer(); // updating timer value
-        randomLed(b); //turn on random led
+        randomLedOn(b); //turn on random led
         ledTimer.setTimer(t); //setting time for leds
         if ( (timeleft) <= 999)
          {
@@ -166,7 +160,7 @@ void loop()
         }
         buttWait(b);
         clearButt(); //clearing butt bufer
-        ledOff(); //turn off all leds
+        ledOff(b); //turn off led
         Serial.print("                                                              your score is ");
         Serial.print(score);
         Serial.print("\n \n");
