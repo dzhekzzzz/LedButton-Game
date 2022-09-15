@@ -1,11 +1,12 @@
 
 #include <stdio.h> 
+int i = 0;
 int gameState = 1;
 int score = 0;
 int noButtPress = 0;
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
-int butt[5];
+int butt[4];
 #define GAME_SET_N_START (1)
 #define GAME_RUNNING (2)
 #define GAME_END (3)
@@ -84,30 +85,49 @@ int randomLedOn(int num)
 //turn off all leds
 void ledOff(int num)
   {
-        digitalWrite(ledInit[num], LOW);
+    digitalWrite(ledInit[num], LOW);
   }  
 
-//выдаем результат в зависимости от нажатой кнопки 
-int buttWait(int num)
+//буфер с нажатыми кнопками
+int WhichButtPressed()
 {
-      if (num == butt[num])
-      {
-        Serial.print("                                                                  CORRECT! \n");
-        score += 1;
-      }    
-        else if ( ledTimer.isTimerRunning() == false)
-        {
-          Serial.print("                                                          NO BUTTON PRESS DETECTED \n");
-        }
+  
+  for (int c = 1; c < 4; c++)
+  {
+   if (digitalRead(buttInit[c]) == HIGH)
+   {
+     butt[c] = c;
+     i = 1;
+   }
+  } 
+  
+}
 
-        return 0;
+
+int Logic(int num)
+{
+ if (butt[num] == num && i == 1)
+ {
+  score += 1;
+  Serial.print("                                                                  CORRECT! \n");
+  //correct
+ }
+  else if (butt[num] != num && i == 1)
+  {
+    Serial.print("                                                                 INCORRECT( \n");
+    //incorrect
+  }
+   else if (ledTimer.isTimerRunning() == false && i == 0)
+   {
+    Serial.print("                                                          NO BUTTON PRESS DETECTED \n");
+   }
 }
 
 //clearing butt bufer
     void clearButt()
     {
         butt[0] = 1; 
-      for (int i = 1; i < 5; i++)
+      for (int i = 1; i < 4; i++)
       {
         butt[i] = 0;
       }
@@ -125,6 +145,12 @@ void startButtonWait()
    }
 }
 
+void PrintScore()
+{
+   Serial.print("                                                              your score is ");
+   Serial.print(score);
+   Serial.print("\n \n");
+}
 
 void loop() 
 { 
@@ -150,31 +176,28 @@ void loop()
           t = timeleft;    
           gameState = GAME_END;     
          }
-        while ( ledTimer.isTimerRunning() == true )
+
+         i = 0;
+        while (ledTimer.isTimerRunning() == true )
         {
-          if (digitalRead(buttInit[b]) == HIGH) 
-           {
-            butt[b] = b;
-             break;
-           }
-        }
-        buttWait(b);
+          
+         WhichButtPressed();
+        } 
+        Logic(b);
+        
         clearButt(); //clearing butt bufer
         ledOff(b); //turn off led
-        Serial.print("                                                              your score is ");
-        Serial.print(score);
-        Serial.print("\n \n");
+        PrintScore();
         waitTimer.setTimer(t);
-           while ( waitTimer.isTimerRunning() == true )
+        while ( waitTimer.isTimerRunning() == true )
         {
           if ( waitTimer.isTimerRunning() == false )
           {
             break;
           }
-           
         }
         break;     
-        
+
   case GAME_END: //game over
        Serial.print("                                                                 GAME OVER\n");
        Serial.print("                                                          your final score is ");
