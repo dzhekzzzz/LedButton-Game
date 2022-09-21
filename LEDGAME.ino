@@ -7,7 +7,8 @@ int score = 0;
 int gameState = 1;
 #define GAME_SET_N_START (1)
 #define GAME_RUNNING (2)
-#define GAME_END (3)
+#define GAME_SCORE (3)
+#define GAME_END (4)
 bool buttPressStatus = false;
 
 class Timer
@@ -43,6 +44,7 @@ class Timer
 Timer timer; 
 Timer ledTimer;
 Timer waitTimer;
+Timer scoreTimer;
 
 //generating random number for led
 int randomGenLed()
@@ -132,10 +134,18 @@ void printScore()
 
 void printGameOverScore()
 {
+  Serial.print("\n\n\n\n\n\n\n\n\n");
   Serial.print("                                                                 GAME OVER\n");
   Serial.print("                                                          your final score is ");
   Serial.print(score);
-  Serial.print(" !!! \n\n\n");
+  Serial.print(" !!! \n\n\n\n\n\n\n\n\n");
+}
+
+void printPressStartButton()
+{
+  Serial.print("\n\n\n\n\n");
+  Serial.print("                                                        Please press Start Button!!!\n\n");
+  Serial.print("\n\n\n\n\n"); 
 }
 
 void setup() 
@@ -154,14 +164,14 @@ void loop()
 { 
   int b = randomGenLed();
   int t = randomGenTime();
-  int timeleft = timer.limitValue - (timer.newTimeValue - timer.oldTimeValue);
+  unsigned long timeleft = timer.limitValue - (timer.newTimeValue - timer.oldTimeValue);
   
   switch (gameState) 
   {
             
    case GAME_SET_N_START: // the game start
-            
-    Serial.print("                                                        Please press Start Button!!!\n\n");  
+
+    printPressStartButton();
     startButtonWait(); //waiting for start button
     timer.updateTimer(); // updating and init timer value
     timer.setTimer(15000); //set how long game will last 
@@ -171,13 +181,13 @@ void loop()
   case GAME_RUNNING: // the game
             
     timer.updateTimer(); // updating and init timer value
-    ledOn(b); //turn on led
-    ledTimer.setTimer(t); //setting time for leds
-    if ( (timeleft) <= 999)
+    if ((timeleft) <= 999)
     {
       t = timeleft;    
-      gameState = GAME_END;     
+      gameState = GAME_SCORE;     
     }
+    ledOn(b); //turn on led
+    ledTimer.setTimer(t); //setting time for leds 
     buttPressStatus = false;
     while (ledTimer.isTimerRunning() == true )
     {   
@@ -192,18 +202,29 @@ void loop()
     ledOff(b); //turn off led
     printScore();
     waitTimer.setTimer(t);
-    while ( waitTimer.isTimerRunning() == true )
+    while (waitTimer.isTimerRunning() == true )
     {
-      if ( waitTimer.isTimerRunning() == false )
+      if (waitTimer.isTimerRunning() == false )
       {
         break;
       }
     }
     break;     
 
-  case GAME_END: //game over
-
-   printGameOverScore();         
+  case GAME_SCORE:
+    scoreTimer.setTimer(5000);
+    printGameOverScore(); 
+    while (scoreTimer.isTimerRunning() == true )
+    {
+      if (scoreTimer.isTimerRunning() == false )
+      {
+        break;
+      }
+    }
+    gameState = GAME_END;
+    break;
+    
+  case GAME_END: //game over        
    gameState = GAME_SET_N_START;
    score = 0;
    buttState[0] = 0;
