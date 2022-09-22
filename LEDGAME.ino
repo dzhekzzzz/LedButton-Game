@@ -9,6 +9,7 @@ int gameState = 1;
 #define GAME_RUNNING (2)
 #define GAME_SCORE (3)
 #define GAME_END (4)
+#define BUTTONS_QUANTITY (4)
 bool buttPressStatus = false;
 
 class Timer
@@ -29,7 +30,7 @@ class Timer
     limitValue = timeToSet;
   }
   
- bool isTimerRunning()
+  bool isTimerRunning()
   {
     newTimeValue = millis();      
     return ((newTimeValue - oldTimeValue) <= limitValue);
@@ -56,7 +57,7 @@ int randomGenTime()
   return randomtime;
 }
 
- //turn on random led
+ //turn on led
 int ledOn(int num)
 {
   digitalWrite(ledInit[num], HIGH);   
@@ -68,10 +69,10 @@ void ledOff(int num)
   digitalWrite(ledInit[num], LOW);
 }  
 
-//буфер с нажатыми кнопками
+//butt buffer 
 int checkButtPress()
 {  
-  for (int i = 1; i < 4; i++)
+  for (int i = 1; i < BUTTONS_QUANTITY; i++)
   {
     if (digitalRead(buttInit[i]) == HIGH)
     {
@@ -103,7 +104,7 @@ void clearButt()
 {
   buttState[0] = 1; 
      
-  for (int i = 1; i < 4; i++)
+  for (int i = 1; i < BUTTONS_QUANTITY; i++)
    {
      buttState[i] = 0;
    }
@@ -149,7 +150,7 @@ void setup()
   Serial.begin(9600); 
   randomSeed(analogRead(0));
      
-  for (int s = 0; s < 4; s++)
+  for (int s = 0; s < BUTTONS_QUANTITY; s++) //here BUTTONS_QUANTITY means butt and leds quantity (its always same)
   {
     pinMode(ledInit[s], OUTPUT);
     pinMode(buttInit[s], INPUT);
