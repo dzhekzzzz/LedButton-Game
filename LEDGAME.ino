@@ -29,14 +29,10 @@ class Timer
     limitValue = timeToSet;
   }
   
-  bool isTimerRunning()
+ bool isTimerRunning()
   {
-    newTimeValue = millis();
-        
-    if ( (newTimeValue - oldTimeValue) <= limitValue)
-      return true;
-    else 
-      return false;
+    newTimeValue = millis();      
+    return ((newTimeValue - oldTimeValue) <= limitValue);
   }
 
 };
