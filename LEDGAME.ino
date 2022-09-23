@@ -84,16 +84,16 @@ int checkButtPress()
 
 int checkResult(int num)
 { 
- if (buttState[num] == 1 && buttPressStatus == true)
+ if (buttState[num] == 1 && buttPressStatus)
   {
     score += 1;
     Serial.print("                                                                  CORRECT! \n");
   }
- else if (buttState[num] == 0 && buttPressStatus == true)
+ else if (buttState[num] == 0 && buttPressStatus)
   {
     Serial.print("                                                                 INCORRECT( \n");
   }
- else if (ledTimer.isTimerRunning() == false && buttPressStatus == false)
+ else if (!ledTimer.isTimerRunning() && !buttPressStatus)
   {
     Serial.print("                                                          NO BUTTON PRESS DETECTED \n");
   }
@@ -186,10 +186,10 @@ void loop()
     ledOn(b); //turn on led
     ledTimer.setTimer(t); //setting time for leds 
     buttPressStatus = false;
-    while (ledTimer.isTimerRunning() == true )
+    while (ledTimer.isTimerRunning())
     {   
       checkButtPress();
-      if (buttPressStatus == true)
+      if (buttPressStatus)
       {
         break;
       }
@@ -199,9 +199,9 @@ void loop()
     ledOff(b); //turn off led
     printScore();
     waitTimer.setTimer(t);
-    while (waitTimer.isTimerRunning() == true )
+    while (waitTimer.isTimerRunning())
     {
-      if (waitTimer.isTimerRunning() == false )
+      if (!waitTimer.isTimerRunning())
       {
         break;
       }
@@ -211,9 +211,9 @@ void loop()
   case GAME_SCORE:
     scoreTimer.setTimer(5000);
     printGameOverScore(); 
-    while (scoreTimer.isTimerRunning() == true )
+    while (scoreTimer.isTimerRunning())
     {
-      if (scoreTimer.isTimerRunning() == false )
+      if (!scoreTimer.isTimerRunning())
       {
         break;
       }
