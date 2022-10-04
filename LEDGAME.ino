@@ -103,7 +103,7 @@ int checkResult(int num)
 void clearButt()
 {
   buttState[0] = 1; 
-     
+  buttPressStatus = false;   
   for (int i = 1; i < BUTTONS_QUANTITY; i++)
    {
      buttState[i] = 0;
@@ -145,6 +145,23 @@ void printPressStartButton()
   Serial.print("\n\n\n\n\n"); 
 }
 
+void userSetGameTime()
+{
+  Serial.print("                                                          Please set game timer\n\n");
+  Serial.print("                                                Button1 = 10sec, Button2 = 20sec, Button3 = 30sec \n\n");
+  while( !buttPressStatus )
+  {
+    checkButtPress();
+    for (unsigned long i = 1, t = 10000; i < 4; i++)
+    {
+      if (buttState[i] == 1)
+      {
+        timer.setTimer(t*i); //set how long game will last 
+      }
+    } 
+  }
+}
+
 void setup() 
 {  
   Serial.begin(9600); 
@@ -169,15 +186,16 @@ void loop()
    case GAME_SET_N_START: // the game start
 
     printPressStartButton();
-    startButtonWait(); //waiting for start button
+    startButtonWait(); //waiting for start button 
+    userSetGameTime();
     timer.updateTimer(); // updating and init timer value
-    timer.setTimer(15000); //set how long game will last 
     gameState = GAME_RUNNING;
     break;
         
   case GAME_RUNNING: // the game
-            
+    clearButt();       
     timer.updateTimer(); // updating and init timer value
+    ledTimer.updateTimer();
     if ((timeleft) <= 999)
     {
       t = timeleft;    
@@ -185,6 +203,7 @@ void loop()
     }
     ledOn(b); //turn on led
     ledTimer.setTimer(t); //setting time for leds 
+    Serial.print(ledTimer.newTimeValue);
     buttPressStatus = false;
     while (ledTimer.isTimerRunning())
     {   
