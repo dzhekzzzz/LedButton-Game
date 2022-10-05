@@ -160,7 +160,7 @@ void userSetGameTime()
   while( !buttPressStatus )
   {
     checkButtPress();
-    for (unsigned long i = 1, t = 10000; i < 4; i++)
+    for (unsigned long i = 1, t = 10000; i < BUTTONS_QUANTITY; i++)
     {
       if (buttState[i] == 1)
       {
