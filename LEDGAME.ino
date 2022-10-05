@@ -1,5 +1,6 @@
 
 #include <stdio.h> 
+#include <time.h> 
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
 int buttState[4];
@@ -18,6 +19,7 @@ class Timer
   unsigned long  newTimeValue;
   unsigned long  limitValue;
   unsigned long  oldTimeValue;
+  unsigned long  timeleft;
 
   void updateTimer()
   {
@@ -34,6 +36,12 @@ class Timer
   {
     newTimeValue = millis();      
     return ((newTimeValue - oldTimeValue) <= limitValue);
+  }
+
+  int timeLeft()
+  {
+    timeleft = limitValue - (newTimeValue - oldTimeValue);
+    return timeleft;
   }
 
 };
@@ -147,7 +155,7 @@ void printPressStartButton()
 
 void userSetGameTime()
 {
-  Serial.print("                                                          Please set game timer\n\n");
+  Serial.print("                                                          Please set game time\n\n");
   Serial.print("                                                Button1 = 10sec, Button2 = 20sec, Button3 = 30sec \n\n");
   while( !buttPressStatus )
   {
@@ -166,6 +174,7 @@ void setup()
 {  
   Serial.begin(9600); 
   randomSeed(analogRead(0));
+  srand(time(NULL));
      
   for (int s = 0; s < BUTTONS_QUANTITY; s++) //here BUTTONS_QUANTITY means butt and leds quantity (its always same)
   {
@@ -178,7 +187,7 @@ void loop()
 { 
   int b = randomGenLed();
   int t = randomGenTime();
-  unsigned long timeleft = timer.limitValue - (timer.newTimeValue - timer.oldTimeValue);
+  
   
   switch (gameState) 
   {
@@ -188,22 +197,29 @@ void loop()
     printPressStartButton();
     startButtonWait(); //waiting for start button 
     userSetGameTime();
-    timer.updateTimer(); // updating and init timer value
     gameState = GAME_RUNNING;
     break;
         
   case GAME_RUNNING: // the game
+    timer.timeLeft();
     clearButt();       
     timer.updateTimer(); // updating and init timer value
-    ledTimer.updateTimer();
-    if ((timeleft) <= 999)
+    if ((timer.timeLeft()) <= 999)
     {
-      t = timeleft;    
+      t = timer.timeLeft();    
       gameState = GAME_SCORE;     
     }
+    waitTimer.setTimer(t);
+    while (waitTimer.isTimerRunning())
+    {
+      if (!waitTimer.isTimerRunning())
+      {
+        break;
+      }
+    }
+    ledTimer.updateTimer();
     ledOn(b); //turn on led
     ledTimer.setTimer(t); //setting time for leds 
-    Serial.print(ledTimer.newTimeValue);
     buttPressStatus = false;
     while (ledTimer.isTimerRunning())
     {   
@@ -217,14 +233,6 @@ void loop()
     clearButt(); //clearing butt bufer
     ledOff(b); //turn off led
     printScore();
-    waitTimer.setTimer(t);
-    while (waitTimer.isTimerRunning())
-    {
-      if (!waitTimer.isTimerRunning())
-      {
-        break;
-      }
-    }
     break;     
 
   case GAME_SCORE:
