@@ -1,6 +1,8 @@
-
+#include <Wire.h> 
+#include <LiquidCrystal_I2C.h>
 #include <stdio.h> 
 #include <time.h> 
+LiquidCrystal_I2C lcd(0x27,16,2);  // lcd display setup
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
 int buttState[4];
@@ -95,15 +97,18 @@ int checkResult(int num)
  if (buttState[num] == 1 && buttPressStatus)
   {
     score += 1;
-    Serial.print("                                                                  CORRECT! \n");
+    lcd.clear();
+    lcd.print("    CORRECT!");
   }
  else if (buttState[num] == 0 && buttPressStatus)
   {
-    Serial.print("                                                                 INCORRECT( \n");
+    lcd.clear();
+    lcd.print("   INCORRECT(");
   }
  else if (!ledTimer.isTimerRunning() && !buttPressStatus)
   {
-    Serial.print("                                                          NO BUTTON PRESS DETECTED \n");
+    lcd.clear();
+    lcd.print("NO BUTTON PRESS(");
   }
 }
 
@@ -130,33 +135,12 @@ void startButtonWait()
   }
 }
 
-void printScore()
-{
-  Serial.print("                                                              your score is ");
-  Serial.print(score);
-  Serial.print("\n \n");
-}
-
-void printGameOverScore()
-{
-  Serial.print("\n\n\n\n\n\n\n\n\n");
-  Serial.print("                                                                 GAME OVER\n");
-  Serial.print("                                                          your final score is ");
-  Serial.print(score);
-  Serial.print(" !!! \n\n\n\n\n\n\n\n\n");
-}
-
-void printPressStartButton()
-{
-  Serial.print("\n\n\n\n\n");
-  Serial.print("                                                        Please press Start Button!!!\n\n");
-  Serial.print("\n\n\n\n\n"); 
-}
-
 void userSetGameTime()
 {
-  Serial.print("                                                          Please set game time\n\n");
-  Serial.print("                                                Button1 = 10sec, Button2 = 20sec, Button3 = 30sec \n\n");
+  lcd.clear();
+  lcd.print(" set game time!");
+  lcd.setCursor(0, 1);
+  lcd.print("1=10, 2=20, 3=30");
   while( !buttPressStatus )
   {
     checkButtPress();
@@ -170,8 +154,36 @@ void userSetGameTime()
   }
 }
 
+void printScore()
+{
+  lcd.setCursor(0, 1);
+  lcd.print("your score is: ");
+  lcd.print(score);
+}
+
+void printGameOverScore()
+{
+  lcd.clear();
+  lcd.print("    GAME OVER");
+  lcd.setCursor(0, 1);
+  lcd.print(" final score: ");
+  lcd.print(score);
+}
+
+void printPressStartButton()
+{
+  lcd.clear();
+  lcd.print("     please");
+  lcd.setCursor(0, 1);
+  lcd.print("press start butt");
+}
+
+
 void setup() 
 {  
+  
+  lcd.init();                     
+  lcd.backlight();// Включаем подсветку дисплея
   Serial.begin(9600); 
   randomSeed(analogRead(0));
   srand(time(NULL));
