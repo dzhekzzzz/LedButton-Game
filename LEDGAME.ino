@@ -8,10 +8,11 @@ int ledInit[4] = {3, 9, 5, 2} ;
 int buttState[4];
 int score = 0;
 int gameState = 1;
-#define GAME_SET_N_START (1)
-#define GAME_RUNNING (2)
-#define GAME_SCORE (3)
-#define GAME_END (4)
+#define LOGO (1)
+#define GAME_SET_N_START (2)
+#define GAME_RUNNING (3)
+#define GAME_SCORE (4)
+#define GAME_END (5)
 #define BUTTONS_QUANTITY (4)
 bool buttPressStatus = false;
 
@@ -26,6 +27,22 @@ class Timer
   void updateTimer()
   {
     newTimeValue = millis();
+  }
+
+  void specialDelayTimer()
+  {
+    while (isTimerRunning())
+    {
+      if(digitalRead(buttInit[0]) == HIGH)
+      { 
+        buttState[0] = 1; 
+        break;
+      }   
+        else if (!isTimerRunning())
+        {
+          break;
+        }
+    }
   }
 
   void delayTimer()
@@ -64,6 +81,7 @@ Timer ledTimer;
 Timer waitTimer;
 Timer scoreTimer;
 Timer lcdTimer;
+Timer logoTimer;
 
 //generating random number for led
 int randomGenLed()
@@ -135,18 +153,6 @@ void clearButt()
    }
 }
 
- //waiting for start button
-void startButtonWait()
-{
-  while (buttState[0] == 0) 
-  {
-    if(digitalRead(buttInit[0]) == HIGH)
-    { 
-      buttState[0] = 1; 
-    }
-  }
-}
-
 void userSetGameTime()
 {
   lcd.clear();
@@ -208,10 +214,23 @@ void printGameOverScore()
 
 void printPressStartButton()
 {
-  lcd.clear();
-  lcd.print("     please");
-  lcd.setCursor(0, 1);
-  lcd.print("press start butt");
+  lcd.clear(); 
+  lcd.print("LED BUTTON GAME!");
+  while (buttState[0] == 0) 
+  {
+     if(digitalRead(buttInit[0]) == HIGH)
+    { 
+      buttState[0] = 1; 
+    }   
+    lcd.setCursor(0, 1);
+    lcd.print("press start butt");
+    logoTimer.setTimer(1000);
+    logoTimer.specialDelayTimer();
+    lcd.clear(); 
+    lcd.print("LED BUTTON GAME!");
+    logoTimer.setTimer(1000);
+    logoTimer.specialDelayTimer();
+  }
 }
 
 
@@ -238,42 +257,44 @@ void loop()
   
   switch (gameState) 
   {
-            
-   case GAME_SET_N_START: // the game start
 
+   case LOGO:
     printPressStartButton();
-    startButtonWait(); //waiting for start button 
+    clearButt();
     userSetGameTime();
     gameState = GAME_RUNNING;
-    break;
-        
+           
   case GAME_RUNNING: // the game
     timer.timeLeft();
     clearButt();       
     timer.updateTimer(); // updating and init timer value
-    if ((timer.timeLeft()) <= 999)
+    waitTimer.setTimer(t);
+    waitTimer.delayTimer();
+    ledTimer.updateTimer();
+    if (timer.timeLeft() <= 999)
     {
       t = timer.timeLeft();    
       gameState = GAME_SCORE;     
     }
-    waitTimer.setTimer(t);
-    waitTimer.delayTimer();
-    ledTimer.updateTimer();
-    ledOn(b); //turn on led
-    ledTimer.setTimer(t); //setting time for leds 
-    buttPressStatus = false;
-    while (ledTimer.isTimerRunning())
-    {   
-      checkButtPress();
-      if (buttPressStatus)
+      else
       {
-        break;
+        ledOn(b); //turn on led
+        ledTimer.setTimer(t); //setting time for leds 
+        buttPressStatus = false;
+        while (ledTimer.isTimerRunning())
+        {   
+          checkButtPress();
+          if (buttPressStatus)
+          {
+           break;
+          }
+        } 
+        checkResult(b); //      
+        clearButt(); //clearing butt bufer
+        ledOff(b); //turn off led
+        printScore();
       }
-    } 
-    checkResult(b); //      
-    clearButt(); //clearing butt bufer
-    ledOff(b); //turn off led
-    printScore();
+   
     break;     
 
   case GAME_SCORE:
@@ -284,7 +305,7 @@ void loop()
     break;
     
   case GAME_END: //game over        
-   gameState = GAME_SET_N_START;
+   gameState = LOGO;
    score = 0;
    buttState[0] = 0;
    break;
