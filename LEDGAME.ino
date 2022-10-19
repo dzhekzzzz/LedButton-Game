@@ -199,7 +199,7 @@ void countdown()
 void printScore()
 {
   lcd.setCursor(0, 1);
-  lcd.print("your score is: ");
+  lcd.print("your score is:");
   lcd.print(score);
 }
 
@@ -208,7 +208,7 @@ void printGameOverScore()
   lcd.clear();
   lcd.print("   GAME OVER!");
   lcd.setCursor(0, 1);
-  lcd.print(" final score: ");
+  lcd.print(" final score:");
   lcd.print(score);
 }
 
