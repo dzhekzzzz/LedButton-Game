@@ -124,21 +124,16 @@ int checkButtPress()
 
 int checkResult(int num)
 { 
- if (buttState[num] == 1 && buttPressStatus)
-  {
-    score += 1;
-    lcd.clear();
-    lcd.print("    CORRECT!");
+  lcd.clear();
+  if (!buttPressStatus){
+     lcd.print("NO BUTTON PRESS(");
   }
- else if (buttState[num] == 0 && buttPressStatus)
-  {
-    lcd.clear();
+  else if (buttState[num] == 1){
+     score += 1;
+     lcd.print("    CORRECT!");
+  }
+  else{
     lcd.print("   INCORRECT(");
-  }
- else if (!ledTimer.isTimerRunning() && !buttPressStatus)
-  {
-    lcd.clear();
-    lcd.print("NO BUTTON PRESS(");
   }
 }
 
