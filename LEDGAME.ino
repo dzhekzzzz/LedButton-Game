@@ -1,11 +1,11 @@
-#include <Wire.h> 
+#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
-#include <stdio.h> 
-#include <time.h> 
-LiquidCrystal_I2C lcd(0x27,16,2);  // lcd display setup
+#include <stdio.h>
+#include <time.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2); // lcd display setup
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
-int buttState[4];
+//int buttState[4];
 int score = 0;
 int gameState = 1;
 #define LOGO (1)
@@ -19,64 +19,65 @@ bool buttPressStatus = false;
 class Timer
 {
   public:
-  unsigned long  newTimeValue;
-  unsigned long  limitValue;
-  unsigned long  oldTimeValue;
-  unsigned long  timeleft;
+    unsigned long newTimeValue;
+    unsigned long  limitValue;
+    unsigned long  oldTimeValue;
+    unsigned long  timeleft;
 
-  void updateTimer()
-  {
-    newTimeValue = millis();
-  }
-
-  void specialDelayTimer()
-  {
-    while (isTimerRunning())
+    void updt()
     {
-      if(digitalRead(buttInit[0]) == HIGH)
-      { 
-        buttState[0] = 1; 
-        break;
-      }   
-        else if (!isTimerRunning())
+      newTimeValue = millis();
+      //    return newTimeValue;
+    }
+
+    void specialDelayTimer(int *buttState)
+    {
+      while (isRunning())
+      {
+        if (digitalRead(buttInit[0]) == HIGH)
+        {
+          buttState[0] = 1;
+          break;
+        }
+        else if (!isRunning())
         {
           break;
         }
-    }
-  }
-
-  void delayTimer()
-  {
-    while (isTimerRunning())
-    {
-      if (!isTimerRunning())
-      {
-        break;
       }
     }
-  }
-  
-  void setTimer(unsigned long timeToSet)
-  {
-    oldTimeValue = millis();
-    limitValue = timeToSet;
-  }
-  
-  bool isTimerRunning()
-  {
-    newTimeValue = millis();      
-    return ((newTimeValue - oldTimeValue) <= limitValue);
-  }
 
-  int timeLeft()
-  {
-    timeleft = limitValue - (newTimeValue - oldTimeValue);
-    return timeleft;
-  }
+    void dlay()
+    {
+      while (isRunning())
+      {
+        if (!isRunning())
+        {
+          break;
+        }
+      }
+    }
+
+    void set(unsigned long timeToSet)
+    {
+      oldTimeValue = millis();
+      limitValue = timeToSet;
+    }
+
+    bool isRunning()
+    {
+      newTimeValue = millis();
+      return ((newTimeValue - oldTimeValue) <= limitValue);
+    }
+
+    int timeLeft()
+    {
+      timeleft = limitValue - (newTimeValue - oldTimeValue);
+      return timeleft;
+    }
 
 };
 
-Timer timer; 
+Timer timer;
 Timer ledTimer;
 Timer waitTimer;
 Timer scoreTimer;
@@ -86,32 +87,32 @@ Timer logoTimer;
 //generating random number for led
 int randomGenLed()
 {
-  int num = rand() % 3 + 1; 
-  return num; 
+  int num = rand() % 3 + 1;
+  return num;
 }
 
 //generating random time for led
 int randomGenTime()
 {
-  int randomtime = (rand() % 9 + 3) * 100; 
+  int randomtime = (rand() % 9 + 3) * 100;
   return randomtime;
 }
 
- //turn on led
+//turn on led
 int ledOn(int num)
 {
-  digitalWrite(ledInit[num], HIGH);   
+  digitalWrite(ledInit[num], HIGH);
 }
 
 //turn off all leds
 void ledOff(int num)
 {
   digitalWrite(ledInit[num], LOW);
-}  
+}
 
-//butt buffer 
-int checkButtPress()
-{  
+//butt buffer
+int checkButtPress(int *buttState)
+{
   for (int i = 1; i < BUTTONS_QUANTITY; i++)
   {
     if (digitalRead(buttInit[i]) == HIGH)
@@ -119,60 +120,60 @@ int checkButtPress()
       buttState[i] = 1;
       buttPressStatus = true;
     }
-  }  
+  }
 }
 
-int checkResult(int num)
-{ 
+int checkResult(int num, int *buttState)
+{
   lcd.clear();
-  if (!buttPressStatus){
-     lcd.print("NO BUTTON PRESS(");
+  if (!buttPressStatus) {
+    lcd.print("NO BUTTON PRESS(");
   }
-  else if (buttState[num] == 1){
-     score += 1;
-     lcd.print("    CORRECT!");
+  else if (buttState[num] == 1) {
+    score += 1;
+    lcd.print("    CORRECT!");
   }
-  else{
+  else {
     lcd.print("   INCORRECT(");
   }
 }
 
 //clearing butt bufer
-void clearButt()
+void clearButt(int *buttState)
 {
-  buttState[0] = 1; 
-  buttPressStatus = false;   
+  buttState[0] = 1;
+  buttPressStatus = false;
   for (int i = 1; i < BUTTONS_QUANTITY; i++)
-   {
-     buttState[i] = 0;
-   }
+  {
+    buttState[i] = 0;
+  }
 }
 
-void userSetGameTime()
+void userSetGameTime(int *buttState)
 {
   lcd.clear();
   lcd.print(" set game time!");
   lcd.setCursor(0, 1);
   lcd.print("1=10, 2=20, 3=30");
-  while( !buttPressStatus )
+  while ( !buttPressStatus )
   {
-    checkButtPress();
+    checkButtPress(buttState);
     for (unsigned long i = 1, t = 10000; i < BUTTONS_QUANTITY; i++)
     {
       if (buttState[i] == 1)
-      {  
+      {
         lcd.clear();
         lcd.print("  setted time:");
         lcd.setCursor(7, 1);
         lcd.print(i);
         lcd.setCursor(8, 1);
         lcd.print("0!");
-        lcdTimer.setTimer(2000);
-        lcdTimer.delayTimer();
+        lcdTimer.set(2000);
+        lcdTimer.dlay();
         countdown();
-        timer.setTimer(t*i); //set how long game will last 
+        timer.set(t * i); //set how long game will last
       }
-    } 
+    }
   }
 }
 
@@ -184,9 +185,9 @@ void countdown()
     lcd.print(" game start in:");
     lcd.setCursor(8, 1);
     lcd.print(i);
-    lcdTimer.setTimer(1000);
-    lcdTimer.delayTimer();
-  }        
+    lcdTimer.set(1000);
+    lcdTimer.dlay();
+  }
   lcd.clear();
   lcd.print("  game started ");
 }
@@ -207,105 +208,106 @@ void printGameOverScore()
   lcd.print(score);
 }
 
-void printPressStartButton()
+void printPressStartButton(int *buttState)
 {
-  lcd.clear(); 
+  lcd.clear();
   lcd.print("LED BUTTON GAME!");
-  while (buttState[0] == 0) 
+  while (buttState[0] == 0)
   {
-     if(digitalRead(buttInit[0]) == HIGH)
-    { 
-      buttState[0] = 1; 
-    }   
+    if (digitalRead(buttInit[0]) == HIGH)
+    {
+      buttState[0] = 1;
+    }
     lcd.setCursor(0, 1);
     lcd.print("press start butt");
-    logoTimer.setTimer(1000);
-    logoTimer.specialDelayTimer();
-    lcd.clear(); 
+    logoTimer.set(1000);
+    logoTimer.specialDelayTimer(buttState);
+    lcd.clear();
     lcd.print("LED BUTTON GAME!");
-    logoTimer.setTimer(1000);
-    logoTimer.specialDelayTimer();
+    logoTimer.set(1000);
+    logoTimer.specialDelayTimer(buttState);
   }
 }
 
 
-void setup() 
-{  
-  lcd.init();                     
+void setup()
+{
+  lcd.init();
   lcd.backlight();
-  Serial.begin(9600); 
+  Serial.begin(9600);
   randomSeed(analogRead(0));
   srand(time(NULL));
-     
+
   for (int s = 0; s < BUTTONS_QUANTITY; s++) //here BUTTONS_QUANTITY means butt and leds quantity (its always same)
   {
     pinMode(ledInit[s], OUTPUT);
     pinMode(buttInit[s], INPUT);
-  } 
+  }
 }
 
-void loop() 
-{ 
+void loop()
+{
   int b = randomGenLed();
   int t = randomGenTime();
+  int buttState[] = {0, 0, 0, 0};
   
-  
-  switch (gameState) 
+
+  switch (gameState)
   {
 
-   case LOGO:
-    printPressStartButton();
-    clearButt();
-    userSetGameTime();
-    gameState = GAME_RUNNING;
-           
-  case GAME_RUNNING: // the game
-    timer.timeLeft();
-    clearButt();       
-    timer.updateTimer(); // updating and init timer value
-    waitTimer.setTimer(t);
-    waitTimer.delayTimer();
-    ledTimer.updateTimer();
-    if (timer.timeLeft() <= 999)
-    {
-      t = timer.timeLeft();    
-      gameState = GAME_SCORE;     
-    }
+    case LOGO:
+      printPressStartButton(buttState);
+      clearButt(buttState);
+      userSetGameTime(buttState);
+      gameState = GAME_RUNNING;
+
+    case GAME_RUNNING: // the game
+      timer.timeLeft();
+      clearButt(buttState);
+      timer.updt(); // updating and init timer value
+      waitTimer.set(t);
+      waitTimer.dlay();
+      ledTimer.updt();
+      if (timer.timeLeft() <= 999)
+      {
+        t = timer.timeLeft();
+        gameState = GAME_SCORE;
+      }
       else
       {
         ledOn(b); //turn on led
-        ledTimer.setTimer(t); //setting time for leds 
+        ledTimer.set(t); //setting time for leds
         buttPressStatus = false;
-        while (ledTimer.isTimerRunning())
-        {   
-          checkButtPress();
+        while (ledTimer.isRunning())
+        {
+          checkButtPress(buttState);
           if (buttPressStatus)
           {
-           break;
+            break;
           }
-        } 
-        checkResult(b); //      
-        clearButt(); //clearing butt bufer
+        }
+        checkResult(b, buttState); //
+        clearButt(buttState); //clearing butt bufer
         ledOff(b); //turn off led
         printScore();
       }
-   
-    break;     
 
-  case GAME_SCORE:
-    scoreTimer.setTimer(5000);
-    printGameOverScore(); 
-    scoreTimer.delayTimer();
-    gameState = GAME_END;
-    break;
-    
-  case GAME_END: //game over        
-   gameState = LOGO;
-   score = 0;
-   buttState[0] = 0;
-   break;
-            
-  default:
-    break;
+      break;
+
+    case GAME_SCORE:
+      scoreTimer.set(5000);
+      printGameOverScore();
+      scoreTimer.dlay();
+      gameState = GAME_END;
+      break;
+
+    case GAME_END: //game over
+      gameState = LOGO;
+      score = 0;
+      buttState[0] = 0;
+      break;
+
+    default:
+      break;
   }
 }
