@@ -5,8 +5,6 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2); // lcd display setup
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
-//int buttState[4];
-int score = 0;
 int gameState = 1;
 #define LOGO (1)
 #define GAME_SET_N_START (2)
@@ -128,14 +126,17 @@ int checkResult(int num, int *buttState)
   lcd.clear();
   if (!buttPressStatus) {
     lcd.print("NO BUTTON PRESS(");
+    return 0;
   }
   else if (buttState[num] == 1) {
-    score += 1;
     lcd.print("    CORRECT!");
+    return 1;
   }
   else {
     lcd.print("   INCORRECT(");
+    return 0;
   }
+  return 0;
 }
 
 //clearing butt bufer
@@ -192,20 +193,22 @@ void countdown()
   lcd.print("  game started ");
 }
 
-void printScore()
+void printScore(int score)
 {
   lcd.setCursor(0, 1);
   lcd.print("your score is:");
   lcd.print(score);
+  Serial.print(score);
 }
 
-void printGameOverScore()
+void printGameOverScore(int score)
 {
   lcd.clear();
   lcd.print("   GAME OVER!");
   lcd.setCursor(0, 1);
   lcd.print(" final score:");
   lcd.print(score);
+  Serial.print(score);
 }
 
 void printPressStartButton(int *buttState)
@@ -229,7 +232,6 @@ void printPressStartButton(int *buttState)
   }
 }
 
-
 void setup()
 {
   lcd.init();
@@ -250,8 +252,8 @@ void loop()
   int b = randomGenLed();
   int t = randomGenTime();
   int buttState[] = {0, 0, 0, 0};
+  static int score = 0;
   
-
   switch (gameState)
   {
 
@@ -286,17 +288,17 @@ void loop()
             break;
           }
         }
-        checkResult(b, buttState); //
+        score = score + (checkResult(b, buttState));
         clearButt(buttState); //clearing butt bufer
         ledOff(b); //turn off led
-        printScore();
+        printScore(score);
       }
 
       break;
 
     case GAME_SCORE:
       scoreTimer.set(5000);
-      printGameOverScore();
+      printGameOverScore(score);
       scoreTimer.dlay();
       gameState = GAME_END;
       break;
