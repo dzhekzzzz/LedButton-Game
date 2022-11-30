@@ -5,7 +5,6 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2); // lcd display setup
 int buttInit[4] = {4, 7, 10, 12} ;
 int ledInit[4] = {3, 9, 5, 2} ;
-int gameState = 1;
 #define LOGO (1)
 #define GAME_SET_N_START (2)
 #define GAME_RUNNING (3)
@@ -253,6 +252,7 @@ void loop()
   int t = randomGenTime();
   int buttState[] = {0, 0, 0, 0};
   static int score = 0;
+  static int gameState = 1;
   
   switch (gameState)
   {
