@@ -11,7 +11,6 @@ int ledInit[4] = {3, 9, 5, 2} ;
 #define GAME_SCORE (4)
 #define GAME_END (5)
 #define BUTTONS_QUANTITY (4)
-bool buttPressStatus = false;
 
 class Timer
 {
@@ -24,7 +23,7 @@ class Timer
     void updt()
     {
       newTimeValue = millis();
-      //    return newTimeValue;
+      
     }
 
     void specialDelayTimer(int *buttState)
@@ -108,22 +107,22 @@ void ledOff(int num)
 }
 
 //butt buffer
-int checkButtPress(int *buttState)
+int checkButtPress(int *buttState, bool *buttPressStatus)
 {
   for (int i = 1; i < BUTTONS_QUANTITY; i++)
   {
     if (digitalRead(buttInit[i]) == HIGH)
     {
       buttState[i] = 1;
-      buttPressStatus = true;
+      *buttPressStatus = true;
     }
   }
 }
 
-int checkResult(int num, int *buttState)
+int checkResult(int num, int *buttState, bool *buttPressStatus)
 {
   lcd.clear();
-  if (!buttPressStatus) {
+  if (!(*buttPressStatus)) {
     lcd.print("NO BUTTON PRESS(");
     return 0;
   }
@@ -139,25 +138,25 @@ int checkResult(int num, int *buttState)
 }
 
 //clearing butt bufer
-void clearButt(int *buttState)
+void clearButt(int *buttState, bool *buttPressStatus)
 {
   buttState[0] = 1;
-  buttPressStatus = false;
+  *buttPressStatus = false;
   for (int i = 1; i < BUTTONS_QUANTITY; i++)
   {
     buttState[i] = 0;
   }
 }
 
-void userSetGameTime(int *buttState)
+void userSetGameTime(int *buttState, bool *buttPressStatus)
 {
   lcd.clear();
   lcd.print(" set game time!");
   lcd.setCursor(0, 1);
   lcd.print("1=10, 2=20, 3=30");
-  while ( !buttPressStatus )
+  while ( !(*buttPressStatus) )
   {
-    checkButtPress(buttState);
+    checkButtPress(buttState, buttPressStatus);
     for (unsigned long i = 1, t = 10000; i < BUTTONS_QUANTITY; i++)
     {
       if (buttState[i] == 1)
@@ -253,19 +252,20 @@ void loop()
   int buttState[] = {0, 0, 0, 0};
   static int score = 0;
   static int gameState = 1;
+  static bool buttPressStatus = false;
   
   switch (gameState)
   {
 
     case LOGO:
       printPressStartButton(buttState);
-      clearButt(buttState);
-      userSetGameTime(buttState);
+      clearButt(buttState, &buttPressStatus);
+      userSetGameTime(buttState, &buttPressStatus);
       gameState = GAME_RUNNING;
 
     case GAME_RUNNING: // the game
       timer.timeLeft();
-      clearButt(buttState);
+      clearButt(buttState, &buttPressStatus);
       timer.updt(); // updating and init timer value
       waitTimer.set(t);
       waitTimer.dlay();
@@ -282,14 +282,14 @@ void loop()
         buttPressStatus = false;
         while (ledTimer.isRunning())
         {
-          checkButtPress(buttState);
+          checkButtPress(buttState, &buttPressStatus);
           if (buttPressStatus)
           {
             break;
           }
         }
-        score = score + (checkResult(b, buttState));
-        clearButt(buttState); //clearing butt bufer
+        score = score + (checkResult(b, buttState, &buttPressStatus));
+        clearButt(buttState, &buttPressStatus); //clearing butt bufer
         ledOff(b); //turn off led
         printScore(score);
       }
