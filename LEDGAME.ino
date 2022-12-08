@@ -15,27 +15,53 @@ int ledInit[4] = {3, 9, 5, 2} ;
 class Timer
 {
   public:
-    unsigned long newTimeValue;
-    unsigned long  limitValue;
-    unsigned long  oldTimeValue;
-    unsigned long  timeleft;
-
-    void updt()
+    
+    int oldValue()
     {
-      newTimeValue = millis();
-      
+      unsigned long oldTimeValue = millis();
+      return oldTimeValue;
     }
 
-    void specialDelayTimer(int *buttState)
+    int newValue()
     {
-      while (isRunning())
+      unsigned long newTimeValue = millis();
+      return newTimeValue;
+    }
+
+    bool calculateIsItRunning(unsigned long oldTimeValue, unsigned long limitValue)
+    {
+      unsigned long newTime = newValue();
+      return (( newValue() - oldTimeValue) <= limitValue);
+    }
+    
+    bool isRunning(unsigned long limitValue)
+    {
+      unsigned long oldTime = oldValue();
+      return calculateIsItRunning(oldTime, limitValue);
+    }
+
+    int calculateTimeLeft(unsigned long oldTimeValue, unsigned long limitValue)
+    {
+      unsigned long newTime = newValue();
+      return limitValue - (newTime - oldTimeValue);
+    }
+
+    int timeLeft(unsigned long limitValue)
+    {
+      unsigned long oldTime = oldValue();
+      return calculateTimeLeft(oldTime, limitValue);
+    }
+
+        void specialDelayTimer(int *buttState)
+    {
+      while (isRunning(1000))
       {
         if (digitalRead(buttInit[0]) == HIGH)
         {
           buttState[0] = 1;
           break;
         }
-        else if (!isRunning())
+        else if (!isRunning(1000))
         {
           break;
         }
@@ -44,31 +70,13 @@ class Timer
 
     void dlay()
     {
-      while (isRunning())
+      while (isRunning(1000))
       {
-        if (!isRunning())
+        if (!isRunning(1000))
         {
           break;
         }
       }
-    }
-
-    void set(unsigned long timeToSet)
-    {
-      oldTimeValue = millis();
-      limitValue = timeToSet;
-    }
-
-    bool isRunning()
-    {
-      newTimeValue = millis();
-      return ((newTimeValue - oldTimeValue) <= limitValue);
-    }
-
-    int timeLeft()
-    {
-      timeleft = limitValue - (newTimeValue - oldTimeValue);
-      return timeleft;
     }
 
 };
