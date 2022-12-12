@@ -14,54 +14,46 @@ int ledInit[4] = {3, 9, 5, 2} ;
 
 class Timer
 {
+  private:
+    unsigned long newTimeValue;
+    unsigned long  limitValue;
+    unsigned long  oldTimeValue;
+    unsigned long  timeleft;
+
   public:
-    
-    int oldValue()
+    void updt()
     {
-      unsigned long oldTimeValue = millis();
-      return oldTimeValue;
+      newTimeValue = millis();    
     }
 
-    int newValue()
+    void set(unsigned long timeToSet)
     {
-      unsigned long newTimeValue = millis();
-      return newTimeValue;
+      oldTimeValue = millis();
+      limitValue = timeToSet;
     }
 
-    bool calculateIsItRunning(unsigned long oldTimeValue, unsigned long limitValue)
+    bool isRunning()
     {
-      unsigned long newTime = newValue();
-      return (( newValue() - oldTimeValue) <= limitValue);
-    }
-    
-    bool isRunning(unsigned long limitValue)
-    {
-      unsigned long oldTime = oldValue();
-      return calculateIsItRunning(oldTime, limitValue);
+      newTimeValue = millis();
+      return ((newTimeValue - oldTimeValue) <= limitValue);
     }
 
-    int calculateTimeLeft(unsigned long oldTimeValue, unsigned long limitValue)
+    int timeLeft()
     {
-      unsigned long newTime = newValue();
-      return limitValue - (newTime - oldTimeValue);
+      timeleft = limitValue - (newTimeValue - oldTimeValue);
+      return timeleft;
     }
 
-    int timeLeft(unsigned long limitValue)
+    void specialDelayTimer(int *buttState)
     {
-      unsigned long oldTime = oldValue();
-      return calculateTimeLeft(oldTime, limitValue);
-    }
-
-        void specialDelayTimer(int *buttState)
-    {
-      while (isRunning(1000))
+      while (isRunning())
       {
         if (digitalRead(buttInit[0]) == HIGH)
         {
           buttState[0] = 1;
           break;
         }
-        else if (!isRunning(1000))
+        else if (!isRunning())
         {
           break;
         }
@@ -70,9 +62,9 @@ class Timer
 
     void dlay()
     {
-      while (isRunning(1000))
+      while (isRunning())
       {
-        if (!isRunning(1000))
+        if (!isRunning())
         {
           break;
         }
