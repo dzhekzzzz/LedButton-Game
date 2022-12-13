@@ -15,10 +15,14 @@ int ledInit[4] = {3, 9, 5, 2} ;
 class Timer
 {
   private:
-    unsigned long newTimeValue;
+    unsigned long  newTimeValue;
     unsigned long  limitValue;
     unsigned long  oldTimeValue;
-    unsigned long  timeleft;
+
+    int currentTime()
+    {
+      return (newTimeValue - oldTimeValue);
+    }
 
   public:
     void updt()
@@ -34,13 +38,13 @@ class Timer
 
     bool isRunning()
     {
-      newTimeValue = millis();
-      return ((newTimeValue - oldTimeValue) <= limitValue);
+      updt();
+      return ( currentTime() <= limitValue);
     }
 
     int timeLeft()
     {
-      timeleft = limitValue - (newTimeValue - oldTimeValue);
+      unsigned long timeleft = limitValue - currentTime();
       return timeleft;
     }
 
