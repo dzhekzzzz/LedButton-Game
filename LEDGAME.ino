@@ -195,14 +195,6 @@ void countdown()
   lcd.print("  game started ");
 }
 
-void printScore(int score)
-{
-  lcd.setCursor(0, 1);
-  lcd.print("your score is:");
-  lcd.print(score);
-  Serial.print(score);
-}
-
 void printGameOverScore(int score)
 {
   lcd.clear();
@@ -210,7 +202,6 @@ void printGameOverScore(int score)
   lcd.setCursor(0, 1);
   lcd.print(" final score:");
   lcd.print(score);
-  Serial.print(score);
 }
 
 void printPressStartButton(int *buttState)
@@ -238,7 +229,6 @@ void setup()
 {
   lcd.init();
   lcd.backlight();
-  Serial.begin(9600);
   randomSeed(analogRead(0));
   srand(time(NULL));
 
@@ -295,7 +285,6 @@ void loop()
         score = score + (checkResult(b, buttState, &buttPressStatus));
         clearButt(buttState, &buttPressStatus); //clearing butt bufer
         ledOff(b); //turn off led
-        printScore(score);
       }
 
       break;
